@@ -1,11 +1,19 @@
-FROM openjdk:8-jdk-alpine as builder
+FROM maven:3.8.6-openjdk-8 AS builder
+
 RUN mkdir -p /app/source
+
 COPY . /app/source
+
 WORKDIR /app/source
-RUN ./mvnw clean package
+
+RUN mvn clean package
 
 
-FROM builder
+# Stage 2 - Runtime
+FROM eclipse-temurin:8-jre
+
 COPY --from=builder /app/source/target/*.jar /app/app.jar
+
 EXPOSE 8080
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom", "-jar", "/app/app.jar"]
+
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app/app.jar"]
